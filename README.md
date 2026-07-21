@@ -81,3 +81,20 @@ Any Node host works. Render's free tier is the easiest:
   or stricter.
 - Free Render web services sleep after inactivity and take a few
   seconds to wake up on the first request — normal, not a bug.
+
+## AI image creator (`/api/image`)
+
+The "Create an image" option in the chat's `+` menu calls this route,
+which asks Gemini's image-generation model to create a picture from a
+text description and sends back a base64 PNG. It reuses the same
+`GEMINI_API_KEY` as the chat route — no separate key needed.
+
+- Optional env var: `GEMINI_IMAGE_MODEL` (defaults to
+  `gemini-2.5-flash-image`). Google renames/rotates image model IDs
+  periodically — if you start seeing 404/"model not found" errors from
+  `/api/image`, check the current model id at
+  https://ai.google.dev/gemini-api/docs/image-generation and set
+  `GEMINI_IMAGE_MODEL` in Render's Environment tab to match.
+- It shares the `exportLimiter`-style per-IP rate limiting (8
+  requests/minute by default — see `imageLimiter` in `server.js`).
+
