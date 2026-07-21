@@ -6,6 +6,7 @@ const rateLimit = require("express-rate-limit");
 const chatRoute = require("./routes/chat");
 const readUrlRoute = require("./routes/readUrl");
 const exportRoute = require("./routes/export");
+const imageRoute = require("./routes/image");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -53,6 +54,15 @@ const exportLimiter = rateLimit({
   legacyHeaders: false,
   message: { error: "Too many export requests — please slow down and try again in a bit." }
 });
+// Image generation is the heaviest/most expensive call this backend makes,
+// so it gets the tightest limit of all.
+const imageLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 8,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many image requests — please slow down and try again in a bit." }
+});
 
 app.get("/", (req, res) => {
   res.json({ status: "ok", service: "StudyMate AI backend" });
@@ -61,6 +71,7 @@ app.get("/", (req, res) => {
 app.use("/api", chatLimiter, chatRoute);
 app.use("/api", readUrlLimiter, readUrlRoute);
 app.use("/api", exportLimiter, exportRoute);
+app.use("/api", imageLimiter, imageRoute);
 
 app.listen(PORT, () => {
   console.log(`StudyMate AI backend listening on port ${PORT}`);
